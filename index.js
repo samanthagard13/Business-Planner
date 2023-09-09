@@ -1,7 +1,6 @@
 const inquirer = require("inquirer");
-const fs = require('fs');
-const { db } = require('./server.js');
-const module = require('./modules/functions.js');
+const myModule = require("./functions.js");
+const { db, connectDatabase } = require("./server.js");
 
 const Actions = [
   "Add Employee",
@@ -11,28 +10,32 @@ const Actions = [
 ];
 
 const init = () => {
+  db.query(`CREATE DATABASE business_db`, function (err, results) {
+    console.log(results);
+  });
+  connectDatabase();
   inquirer
     .prompt([
       {
         type: "list",
         name: "start",
         message: "What would you like to do?",
-        choices: `${Actions}`,
+        choices: Actions,
       },
     ])
     .then((choice) => {
       switch (choice.start) {
         case "Add Employee":
-          module.addEmployee();
+          myModule.addEmployee();
           break;
         case "Add Department":
-          module.addDepartment();
+          myModule.addDepartment();
           break;
         case "Add Role":
-          module.addRole();
+          myModule.addRole();
           break;
         case "Update Empoyee Role":
-          module.updateRole();
+          myModule.updateRole();
           break;
       }
     });

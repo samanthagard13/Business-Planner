@@ -1,5 +1,3 @@
-CREATE DATABASE business_db;
-
 USE business_db;
 
 CREATE TABLE employee (
@@ -10,7 +8,7 @@ CREATE TABLE employee (
     manager_id INT
 );
 
-CReATE TABLE role (
+CREATE TABLE role (
     id INT PRIMARY KEY,
     title VARCHAR(30),
     salary DECIMAL,
