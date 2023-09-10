@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 const myModule = require("./functions.js");
-const { db, connectDatabase } = require("./server.js");
+const { db, schemaSQL } = require("./server.js");
 
 const Actions = [
   "Add Employee",
@@ -9,11 +9,18 @@ const Actions = [
   "Update Empoyee Role",
 ];
 
-const init = () => {
-  db.query(`CREATE DATABASE business_db`, function (err, results) {
-    console.log(results);
+const createDatabaseIfNotExists = () => {
+  db.query(schemaSQL, (err) => {
+    if (err) {
+      console.error('Error executing schema:', err);
+      return;
+    }
+    console.log('Schema executed successfully.');
   });
-  connectDatabase();
+  init();
+};
+
+const init = () => {
   inquirer
     .prompt([
       {
@@ -34,11 +41,11 @@ const init = () => {
         case "Add Role":
           myModule.addRole();
           break;
-        case "Update Empoyee Role":
+        case "Update Employee Role":
           myModule.updateRole();
           break;
       }
     });
 };
 
-init();
+createDatabaseIfNotExists();

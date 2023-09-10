@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 const fs = require("fs");
-const { db } = require("./server.js");
+const { db, schemaSQL } = require("./server.js");
 
 const addEmployee = () => {
   inquirer
@@ -21,23 +21,24 @@ const addEmployee = () => {
         message: "What is the employee's role?",
       },
       {
-        type: "list",
+        type: "input",
         name: "manager",
         message: "Who is the employee's manager",
-        choices: `{{{managers}}}`,
       },
     ])
-    .then((firstName, lastName, role, manager) => {
-      const sql = `INSERT INTO employees (firstName, lastName, role, manager) VALUES (${firstName}, ${lastName}, ${role}, ${manager})`;
+    .then((answers) => {
+      const sql = `INSERT INTO employees (firstName, lastName, role, manager) VALUES (?, ?, ?, ?)`;
 
       db.query(
         sql,
-        [firstName, lastName, role, manager],
+        [answers.firstName, answers.lastName, answers.role, answers.manager],
         (err, results) => {
           if (err) {
             console.error("Error adding employee:", err);
             return;
           }
+          console.log("Employee added to database.", results);
+          init();
         }
       );
     });
@@ -53,14 +54,15 @@ const addDepartment = () => {
       },
     ])
     .then((department_name) => {
-      const sql = `INSERT INTO departments (department_name) VALUES (${department_name})`;
+      const sql = `INSERT INTO departments (department_name) VALUES (?)`;
 
-      dbConnect.query(sql, [department_name], (err, results) => {
+      db.query(sql, [department_name], (err, results) => {
         if (err) {
           console.error("Error adding department: ", err);
           return;
+        } else {
+          console.log("Department added successfully", results);
         }
-        console.log("Deparment added successfully");
       });
     });
 };
