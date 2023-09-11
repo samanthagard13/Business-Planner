@@ -1,6 +1,7 @@
 const inquirer = require("inquirer");
 const myModule = require("./functions.js");
-const { db, schemaSQL } = require("./server.js");
+const fs = require('fs');
+const { db } = require("./server.js");
 
 const Actions = [
   "View All Departments",
@@ -12,7 +13,18 @@ const Actions = [
   "Update Employee Role",
 ];
 
-const //table initialize function
+const createTables = () => {
+  const sql = fs.readFileSync("./db/schema.sql", "utf8");
+  
+  db.query(sql, (err) => {
+    if (err) {
+      console.error("Error creating tables:", err);
+    } else {
+      console.log("Tables created successfully.");
+      init()
+    }
+  });
+};
 
 const init = () => {
   inquirer
@@ -51,4 +63,4 @@ const init = () => {
     });
 };
 
-init();
+createTables();
