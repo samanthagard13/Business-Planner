@@ -3,22 +3,16 @@ const myModule = require("./functions.js");
 const { db, schemaSQL } = require("./server.js");
 
 const Actions = [
+  "View All Departments",
+  "View All Roles",
+  "View All Employees",
   "Add Employee",
   "Add Department",
   "Add Role",
-  "Update Empoyee Role",
+  "Update Employee Role",
 ];
 
-const createDatabaseIfNotExists = () => {
-  db.query(schemaSQL, (err) => {
-    if (err) {
-      console.error('Error executing schema:', err);
-      return;
-    }
-    console.log('Schema executed successfully.');
-  });
-  init();
-};
+const //table initialize function
 
 const init = () => {
   inquirer
@@ -32,6 +26,15 @@ const init = () => {
     ])
     .then((choice) => {
       switch (choice.start) {
+        case "View All Departments":
+          myModule.viewDepartments();
+          break;
+        case "View All Roles":
+          myModule.viewRoles();
+          break;
+        case "View All Employees":
+          myModule.viewEmployees();
+          break;
         case "Add Employee":
           myModule.addEmployee();
           break;
@@ -48,4 +51,4 @@ const init = () => {
     });
 };
 
-createDatabaseIfNotExists();
+init();

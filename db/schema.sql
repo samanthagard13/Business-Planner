@@ -1,4 +1,3 @@
-CREATE DATABASE IF NOT EXISTS business_db;
 
 CREATE TABLE employee (
     id INT PRIMARY KEY,
