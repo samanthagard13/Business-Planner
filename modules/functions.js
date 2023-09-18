@@ -1,5 +1,5 @@
 const inquirer = require("inquirer");
-const { db } = require("./server.js");
+const { db } = require("../server");
 
 const viewDepartments = () => {
   db.query("SELECT * FROM department", (err, results) => {
@@ -9,7 +9,6 @@ const viewDepartments = () => {
       console.log("Department Table");
       console.table(results);
     }
-    init();
   });
 };
 
@@ -21,7 +20,7 @@ const viewRoles = () => {
       console.log("Role Table");
       console.table(results);
     }
-    init();
+    return;
   });
 };
 
@@ -33,11 +32,39 @@ const viewEmployees = () => {
       console.log("Employee Table");
       console.table(results);
     }
-    init();
+    return;
   });
 };
 
 const addEmployee = () => {
+
+  let roleNames = [];
+  let managers = [];
+
+  db.query(
+    'SELECT title, id FROM role', 
+    (err, results) => {
+      if (err) {
+        console.error('Error: ', err);
+      } else {
+        roleNames = results.map((row) => ({
+          name: row.title,
+          id: row.id,
+        }));
+        console.log('Roles: ', roleNames);
+      };
+  });
+  
+  db.query(
+    'SELECT * FROM employee WHERE role_id = ? ', 
+    ['manager'],
+    (err, results) => {
+      if (err) {
+        console.error("error: ", err);
+      }
+      managers = results
+  });
+
   inquirer
     .prompt([
       {
@@ -51,24 +78,30 @@ const addEmployee = () => {
         message: "What is the employee's last name?",
       },
       {
-        type: "input",
+        type: "list",
         name: "role",
         message: "What is the employee's role?",
+        choices: roleNames,
       },
       {
-        type: "input",
+        type: "list",
         name: "manager",
         message: "Who is the employee's manager",
+        choices: managers.map((manager) => ({
+          name: `${manager.first_name} ${manager.last_name}`,
+          value: manager.id,
+        }))
       },
     ])
     .then((answers) => {
-      db.query(`INSERT INTO employee (firstName, lastName, role, manager) VALUES (?, ?, ?, ?)`,
-        [
-          answers.firstName, 
-          answers.lastName, 
-          answers.role, 
-          answers.manager
-        ],
+      const selectedRole = roleNames.find(
+        (role) => role.title === answers.role
+      );
+      const role_id = selectedRole.id;
+
+      db.query(
+        `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`,
+        [answers.firstName, answers.lastName, role_id, answers.manager_id],
         (err, results) => {
           if (err) {
             console.error("Error adding employee:", err);
@@ -78,9 +111,9 @@ const addEmployee = () => {
         }
       );
       db.query(`DESCRIBE employee`);
-      init();
+      return;
     });
-};  
+};
 
 const addDepartment = () => {
   inquirer
@@ -93,55 +126,80 @@ const addDepartment = () => {
     ])
     .then((answers) => {
       db.query(
-        `INSERT INTO departments (department) VALUES (?)`,
-        [answers.department_name], 
+        `INSERT INTO department (name) VALUES (?)`,
+        [answers.department_name],
         (err, results) => {
           if (err) {
             console.error("Error adding department: ", err);
             return;
           } else {
-            console.log("Department added successfully", results);
+            console.log("Department added successfully");
           }
-      });
-    });
-};
-
-const addRole = () => {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "new_role",
-        message: "What is the name of the new role?"
-      },
-      {
-        type: "input",
-        name: "salary",
-        message: "What is the salary for this role?"
-      },
-      {
-        type: "input",
-        name: "department_id",
-        message: "Enter the department ID for this role:",
-      },
-    ])
-    .then((answers) => {
-      db.query(
-        "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
-        [answers.new_role, answers.salary, answers.department_id],
-        (err, results) => {
-          if (err) {
-            console.error("Error adding new role: ", err);
-          } else {
-            console.log("Role added successfully.", results);
-          }
-          init();
         }
       );
     });
 };
 
+const addRole = () => {
+  let depNames; 
+
+  db.query("SELECT name, id FROM department", (err, results) => {
+    if (err) {
+      console.error("Error fetching department names: ", err);
+      return;
+    }
+    
+    depNames = results.map((row) => ({
+      name: row.name,
+      id: row.id, 
+    }));
+
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "new_role",
+          message: "What is the name of the new role?",
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary for this role?",
+        },
+        {
+          type: "list",
+          name: "department_name",
+          message: "Choose the department for this role:",
+          choices: depNames.map((department) => department.name),
+
+        },
+      ])
+      .then((answers) => {
+        const selectedDepartment = depNames.find(
+          (department) => department.name === answers.department_name
+        );
+
+        const department_id = selectedDepartment.id;
+
+        db.query(
+          "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+          [answers.new_role, answers.salary, department_id],
+          (err, results) => {
+            if (err) {
+              console.error("Error adding new role: ", err);
+            } else {
+              console.log("Role added successfully.", results);
+            }
+          }
+        );
+      });
+  });
+};
+
 const updateRole = () => {
+
+//db employee id name list
+
   inquirer
     .prompt([
       {
@@ -165,7 +223,7 @@ const updateRole = () => {
           } else {
             console.log("Employee updated successfully.");
           }
-          init();
+          return;
         }
       );
     });
