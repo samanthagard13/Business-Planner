@@ -49,19 +49,13 @@ const addEmployee = () => {
       id: row.id,
     }));
 
-    console.log('Role Names:', roleNames)
-
-    
     db.query('SELECT id, first_name, last_name FROM employee WHERE role_id = ?', [10], (err, managerResults) => {
       if (err) {
         console.error('Error retrieving managers:', err);
         return; 
-      } else {
-        console.log('Managers:', managerResults);
-      };
+      }
 
       const managers = managerResults;
-      
 
       inquirer
         .prompt([
