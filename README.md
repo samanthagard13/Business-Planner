@@ -6,7 +6,7 @@
 
  This program can help maintain a current database of employees, roles, and departments.
 
- ![Screenshot of start menu]('./images/Screenshot-1.png')
+ ![Screenshot of start menu]('/Images/Screenshot-1.png')
 
  ## Table Of Contents
 
